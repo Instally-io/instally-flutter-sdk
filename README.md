@@ -77,6 +77,20 @@ await Instally.trackPurchase(
 - Flutter 3.10+
 - Dart 3.0+
 
+## Resources
+
+- [Instally Website](https://instally.io) — Track clicks, installs, and revenue from every link
+- [Dashboard](https://app.instally.io) — Real-time analytics for your app installs
+- [Documentation](https://docs.instally.io) — Full SDK docs and API reference
+- [Pricing](https://instally.io/pricing) — Free tier available, no credit card required
+- [Blog](https://instally.io/blog) — Guides on install tracking, IDFA, and more
+
+### Other SDKs
+
+- [iOS SDK](https://github.com/Instally-io/instally-ios-sdk)
+- [Android SDK](https://github.com/Instally-io/instally-android-sdk)
+- [React Native SDK](https://github.com/Instally-io/instally-react-native-sdk)
+
 ## License
 
 MIT
