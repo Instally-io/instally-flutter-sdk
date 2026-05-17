@@ -15,7 +15,6 @@ void main() {
   group('configure', () {
     test('sets up SDK without error', () {
       Instally.configure(appId: 'app_test', apiKey: 'key_test');
-      // No exception = success
     });
   });
 
@@ -62,16 +61,14 @@ void main() {
       Instally.configure(appId: 'app_test', apiKey: 'key_test');
       Instally.setHttpClient(mockClient);
       Instally.setDeviceInfoOverride(() => {
-        return {
-          'platform': 'ios',
-          'device_model': 'test',
-          'os_version': '17.0',
-          'screen_width': 390,
-          'screen_height': 844,
-          'timezone': 'UTC',
-          'language': 'en',
-        };
-      });
+            'platform': 'ios',
+            'device_model': 'test',
+            'os_version': '17.0',
+            'screen_width': 390,
+            'screen_height': 844,
+            'timezone': 'UTC',
+            'language': 'en',
+          });
 
       final result = await Instally.trackInstall();
       expect(result.matched, true);
@@ -109,6 +106,32 @@ void main() {
 
   group('attributionId', () {
     test('defaults to null', () {
+      expect(Instally.attributionId, null);
+    });
+  });
+
+  group('resetForTesting', () {
+    test('clears cached attribution state', () async {
+      SharedPreferences.setMockInitialValues({
+        'instally_tracked': true,
+        'instally_matched': true,
+        'instally_attribution_id': 'attr_reset',
+      });
+
+      Instally.configure(appId: 'app_test', apiKey: 'key_test');
+      final cached = await Instally.trackInstall();
+      expect(cached.method, 'cached');
+      expect(cached.matched, true);
+      expect(Instally.isAttributed, true);
+      expect(Instally.attributionId, 'attr_reset');
+
+      await Instally.resetForTesting();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('instally_tracked'), null);
+      expect(prefs.getBool('instally_matched'), null);
+      expect(prefs.getString('instally_attribution_id'), null);
+      expect(Instally.isAttributed, false);
       expect(Instally.attributionId, null);
     });
   });

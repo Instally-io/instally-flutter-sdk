@@ -1,6 +1,3 @@
-/// Instally Flutter SDK
-/// Track clicks, installs, and revenue from every link.
-/// https://instally.io
 library instally;
 
 import 'dart:convert';
@@ -17,16 +14,12 @@ class Instally {
   static String _apiBase =
       'https://us-central1-instally-5f6fd.cloudfunctions.net/api';
   static bool _isConfigured = false;
-  static const String _sdkVersion = '1.0.0';
+  static const String _sdkVersion = '1.0.1';
 
-  // Cached values (loaded from SharedPreferences)
   static bool _isAttributed = false;
   static String? _attributionId;
 
-  // Injectable HTTP client for testing
   static http.Client? _httpClient;
-
-  // Injectable device info resolver for testing
   static Map<String, dynamic> Function()? _deviceInfoOverride;
 
   /// Configure Instally with your app credentials.
@@ -71,6 +64,16 @@ class Instally {
     _deviceInfoOverride = null;
   }
 
+  /// Clear cached install attribution state for development testing.
+  static Future<void> resetForTesting() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('instally_tracked');
+    await prefs.remove('instally_matched');
+    await prefs.remove('instally_attribution_id');
+    _isAttributed = false;
+    _attributionId = null;
+  }
+
   /// Track app install attribution. Call once on first launch, after configure().
   /// Automatically runs only once per install — safe to call on every launch.
   ///
@@ -85,7 +88,6 @@ class Instally {
 
     final prefs = await SharedPreferences.getInstance();
 
-    // Load cached values into memory
     _isAttributed = prefs.getBool('instally_matched') ?? false;
     _attributionId = prefs.getString('instally_attribution_id');
 
@@ -130,7 +132,6 @@ class Instally {
         clickId: json['click_id'],
       );
 
-      // Persist
       await prefs.setBool('instally_tracked', true);
       await prefs.setBool('instally_matched', result.matched);
       if (result.attributionId != null) {
@@ -138,13 +139,11 @@ class Instally {
             'instally_attribution_id', result.attributionId!);
       }
 
-      // Update in-memory cache
       _isAttributed = result.matched;
       _attributionId = result.attributionId;
 
       return result;
     } catch (e) {
-      // Don't mark as tracked so it retries next launch
       return AttributionResult(
         matched: false,
         attributionId: null,
@@ -227,10 +226,6 @@ class Instally {
   /// Updated after [trackInstall] completes.
   static String? get attributionId => _attributionId;
 
-  // ---------------------------------------------------------------------------
-  // Private
-  // ---------------------------------------------------------------------------
-
   static Future<Map<String, dynamic>> _post(
     String endpoint,
     Map<String, dynamic> payload,
@@ -251,7 +246,6 @@ class Instally {
 
       return jsonDecode(response.body) as Map<String, dynamic>;
     } finally {
-      // Only close if we created it (not injected)
       if (_httpClient == null) {
         client.close();
       }
