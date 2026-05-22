@@ -14,7 +14,7 @@ class Instally {
   static String _apiBase =
       'https://us-central1-instally-5f6fd.cloudfunctions.net/api';
   static bool _isConfigured = false;
-  static const String _sdkVersion = '1.0.1';
+  static const String _sdkVersion = '1.0.2';
 
   static bool _isAttributed = false;
   static String? _attributionId;
@@ -104,7 +104,7 @@ class Instally {
         ? _deviceInfoOverride!()
         : {
             'platform': Platform.isIOS ? 'ios' : 'android',
-            'device_model': Platform.localHostname,
+            'device_model': _deviceModel(),
             'os_version': Platform.operatingSystemVersion,
             'screen_width': PlatformDispatcher
                 .instance.views.first.physicalSize.width
@@ -250,6 +250,12 @@ class Instally {
         client.close();
       }
     }
+  }
+
+  static String _deviceModel() {
+    if (Platform.isIOS) return 'iPhone';
+    if (Platform.isAndroid) return 'Android';
+    return Platform.operatingSystem;
   }
 }
 
