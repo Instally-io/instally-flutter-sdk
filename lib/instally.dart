@@ -189,7 +189,12 @@ class Instally {
       if (transactionId != null) 'transaction_id': transactionId,
     };
 
-    await _post('/v1/purchases', payload);
+    try {
+      await _post('/v1/purchases', payload);
+    } catch (_) {
+      // Tracking must never crash the host app; drop on network/API failure
+      // like the other Instally SDKs.
+    }
   }
 
   /// Link an external user ID (e.g. RevenueCat appUserID) to this install's attribution.
@@ -215,7 +220,12 @@ class Instally {
       'sdk_version': _sdkVersion,
     };
 
-    await _post('/v1/user-id', payload);
+    try {
+      await _post('/v1/user-id', payload);
+    } catch (_) {
+      // Tracking must never crash the host app; drop on network/API failure
+      // like the other Instally SDKs.
+    }
   }
 
   /// Whether this install was attributed to a link.
@@ -243,6 +253,13 @@ class Instally {
             body: jsonEncode(payload),
           )
           .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw http.ClientException(
+          'Instally API error: HTTP ${response.statusCode}',
+          Uri.parse('$_apiBase$endpoint'),
+        );
+      }
 
       return jsonDecode(response.body) as Map<String, dynamic>;
     } finally {
